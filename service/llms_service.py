@@ -20,7 +20,7 @@ class sbert_Service:
         return embeddings
 
 if __name__ == '__main__':
-    model_path = 'models/raw_model/llama2-13b-math'
+    model_path = 'models/raw_model/mistral'
     tensor_parallel_size = 2
     llm_service = LLM_vllm_Service(model_path)
     question = ["22的二次方是多少！"]
