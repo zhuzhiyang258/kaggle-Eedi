@@ -1,15 +1,26 @@
 from vllm import LLM, SamplingParams
 from sentence_transformers import SentenceTransformer
-class LLM_vllm_Service:
-    def __init__(self, model_path, tensor_parallel_size=1):
-        self.llm = LLM(model_path, tensor_parallel_size=tensor_parallel_size)
-        self.sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
-    def generate(self, prompts, sampling_params):
-        outputs = self.llm.generate(prompts, sampling_params)
-        for output in outputs:
-            prompt = output.prompt
-            generated_text = output.outputs[0].text
-            return generated_text
+from openai import OpenAI
+class OpenAIClient:
+    """
+    OpenAI client
+    """
+    def __init__(self):
+        self.api_key = "123456"
+        self.base_url = "http://localhost:8000/v1"
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.models = self.client.models.list()
+        self.model = self.models.data[0].id
+
+    def get_standard_response(self, system_content, user_content):
+        completion = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_content},
+            ],
+        )
+        return completion.choices[0].message.content
 
     
 class sbert_Service:
@@ -20,12 +31,12 @@ class sbert_Service:
         return embeddings
 
 if __name__ == '__main__':
-    model_path = 'models/raw_model/mistral'
-    tensor_parallel_size = 2
-    llm_service = LLM_vllm_Service(model_path)
-    question = ["22的二次方是多少！"]
-    answer = llm_service.generate(question, llm_service.sampling_params)
-    print(answer)
+    client = OpenAIClient()
+    system_content = "你是 AI 人工智能助手"
+    user_content = "介绍一下四川的美食"
+    standard_response = client.get_standard_response(system_content, user_content)
+    # streaming_response = client.get_streaming_response(system_content, user_content)
+    print(standard_response)
 
 
 # if __name__ == '__main__':
